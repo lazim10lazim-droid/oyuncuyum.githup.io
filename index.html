@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Özür Labirenti</title>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle at center, #ffd6d6, #ff9e9e);
+  font-family: 'Poppins', sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Labirent */
+#game {
+  width: 600px;
+  height: 600px;
+  background: #fff3f3;
+  border: 3px solid #d9534f;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  position: relative;
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+}
+.cell {
+  border: 1px solid #ffd4d4;
+  box-sizing: border-box;
+}
+.wall {
+  background: #d9534f;
+}
+.player {
+  background: #5cb85c;
+  border-radius: 50%;
+}
+.goal {
+  background: gold;
+  border-radius: 50%;
+}
+
+/* Mesaj ekranı */
+#messageBox {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: rgba(255,255,255,0.95);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+  width: 90%;
+  max-width: 600px;
+}
+button {
+  background: #d9534f;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  margin: 10px;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover {
+  background: #c9302c;
+}
+
+#apology {
+  font-size: 1.1em;
+  text-align: left;
+  white-space: pre-line;
+  color: #333;
+  margin-top: 20px;
+}
+.falling-heart {
+    position: absolute;
+    font-size: 1.2em;
+    color: #ff4b5c;
+    top: -30px;
+    animation: fall linear infinite, sway 2s ease-in-out infinite alternate;
+}
+@keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+@keyframes sway {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(10px); }
+}
+</style>
+</head>
+<body>
+
+<div id="game"></div>
+
+<div id="messageBox">
+  <div id="question"></div>
+  <div id="result"></div>
+</div>
+
+<script>
+const game = document.getElementById('game');
+const size = 10;
+const maze = [
+  "##########",
+  "#        #",
+  "# ###### #",
+  "# #    # #",
+  "# # ## # #",
+  "# # ## # #",
+  "# #    # #",
+  "# ###### #",
+  "#        #",
+  "##########"
+];
+
+let player = {x:1, y:1};
+let goal = {x:8, y:8};
+
+function drawMaze(){
+  game.innerHTML = '';
+  for(let y=0;y<size;y++){
+    for(let x=0;x<size;x++){
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      if(maze[y][x]==="#") cell.classList.add('wall');
+      if(player.x===x && player.y===y) cell.classList.add('player');
+      if(goal.x===x && goal.y===y) cell.classList.add('goal');
+      game.appendChild(cell);
+    }
+  }
+}
+
+function move(dx,dy){
+  const newX = player.x + dx;
+  const newY = player.y + dy;
+  if(maze[newY][newX]===" ") {
+    player.x = newX;
+    player.y = newY;
+    drawMaze();
+    if(player.x===goal.x && player.y===goal.y){
+      showPreApology();
+    }
+  }
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==="ArrowUp") move(0,-1);
+  if(e.key==="ArrowDown") move(0,1);
+  if(e.key==="ArrowLeft") move(-1,0);
+  if(e.key==="ArrowRight") move(1,0);
+});
+
+drawMaze();
+
+// Ön adım: Mert özür yazısı
+function showPreApology() {
+  document.getElementById('game').style.display = 'none';
+  const messageBox = document.getElementById('messageBox');
+  messageBox.style.display = 'flex';
+  const q = document.getElementById('question');
+  q.innerHTML = `
+    <h2>Ben Mert, cidden özür dilerim. Beni dinler misin?</h2>
+    <button onclick="showPrankStep()">Evet</button>
+  `;
+}
+
+// Şaka adımı
+function showPrankStep() {
+  const q = document.getElementById('question');
+  q.innerHTML = `
+    <h2>Şakalandın 😆</h2>
+    <button onclick="showFinalChoice()">Komik miydi?</button>
+  `;
+}
+
+// Komik miydi kutucuğu tıklandığında asıl seçenekleri göster
+function showFinalChoice(){
+  const q = document.getElementById('question');
+  q.innerHTML = `
+    <h2>Beni dinlemek ister misin?</h2>
+    <button onclick="answer(true)">Evet</button>
+    <button onclick="answer(false)">Hayır</button>
+  `;
+}
+
+// Özür metni
+const apologyText = `Ben ahmaklık yapıp yanlış bilgi aktarımı yaptım bender. Asla öyle bir şey olmadı. Ben sana yapmam bunu. Ben seni yarabandı olarak kullanır mıyım hiç ben ya ben. Aylardır o kadar beraber geçti günümüz bunu mu layık gördün bana üzüldüm ya vallahi üzüldüm. Eylül gelsin desin yarabandı ama senin demen beni üzdü. Beni tanıyamadın mı hiç. Ani kararlar hayatımı boka götürüyor. Seni bir arkadaşım, yoldaşım olarak görmüştüm. Ve ben herkesle bu şekilde olan bir insan bile değilim. O gün mesajına bile cevap vermeyecektim mesela, böyle biriyim ben. Ama senle çok güzel bir arkadaşlığımız oldu, bunu kabul edelim. Geç bunu bir kıza yapmam, sana yapar mıyım? Senin duygularını kötüye kullanır mıyım? Ben sence bu kadar duygusuz biri miyim. Arkadaş kalmayı, sevgilimi olmayı bir kenara bırak. İnsan olarak beni hiç tanımadın mı. Kaç gündür kendimi yiyiorum, kaç dal sigara içtim, uyuyamıyorum. Şu an bile o kadar uykum olmama rağmen bunu hazırlıyorum. Sana yazmayacağım dediğim için. 3,5 saatlik uykuyla saatlerdir buna uğraşıyorum, dışarda masanın üstünde belim ağrıyana kadar bunu yazdım, şablonları hazırlamaya çalıştım. Bana gördüğün zeval bu mu lütfen. Kendimi çok iyi bir insan olarak hiç tanımlamadım, tanımlamıyorum ama cidden kalpsiz miyim. Hele ki şu an bunu hazırlıyorum, bunu yapmak yerine yarabandı için kız bile bakabilir, flörtleşebilirdim. Ama cidden bu kadar aşağılık mıyım ben söylesene. Bunları düşünüp tartmanı istiyorum. Bu son dinleyişin artık aramızda konuşma falan olmayacak, merak etme.`
+
+// Cevap fonksiyonu
+function answer(isYes){
+  const q = document.getElementById('question');
+  const r = document.getElementById('result');
+  q.style.display='none';
+  r.innerHTML='';
+  if(isYes){
+    const p = document.createElement('p');
+    p.id='apology';
+    r.appendChild(p);
+    typeWriter(apologyText,p);
+  } else {
+    r.innerHTML='<h2>Ben puştum 💀</h2>';
+  }
+}
+
+// Yazı efekti
+function typeWriter(text, element, index = 0){
+  if(index < text.length){
+    element.innerHTML += text.charAt(index);
+    setTimeout(()=>typeWriter(text,element,index+1),20);
+  }
+}
+
+// Düşen kalpler
+function createFallingHeart() {
+  const heart = document.createElement('div');
+  heart.className='falling-heart';
+  heart.style.left=Math.random()*window.innerWidth+'px';
+  heart.style.fontSize=(15+Math.random()*20)+'px';
+  heart.style.animationDuration=(4+Math.random()*3)+'s';
+  heart.innerHTML='❤️';
+  document.body.appendChild(heart);
+  setTimeout(()=>heart.remove(),7000);
+}
+setInterval(createFallingHeart,500);
+</script>
+</body>
+</html>
